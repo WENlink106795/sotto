@@ -1,0 +1,51 @@
+{
+  "name": "sotto",
+  "version": "0.1.0",
+  "description": "Sotto — ASMR library organizer for players: VTT/SRT to LRC, filename sanitizing, cover art and audio transcoding.",
+  "main": "./out/main/index.js",
+  "author": "Sotto contributors",
+  "license": "MIT",
+  "private": true,
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "start": "electron-vite preview",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
+    "dev:web": "vite --config vite.web.config.ts",
+    "build:web": "vite build --config vite.web.config.ts",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "screenshots": "npm run build:web && electron scripts/capture-ui.cjs",
+    "pack:dir": "npm run build && electron-builder --dir --config electron-builder.yml",
+    "pack:win": "npm run build && electron-builder --win --x64 --ia32 --config electron-builder.yml",
+    "fetch:ffmpeg": "node scripts/fetch-ffmpeg.mjs",
+    "sign": "powershell -NoProfile -ExecutionPolicy Bypass -File scripts/sign-artifacts.ps1",
+    "demo": "node scripts/create-demo-library.mjs"
+  },
+  "dependencies": {
+    "clsx": "2.1.1",
+    "iconv-lite": "0.6.3",
+    "lucide-react": "0.468.0",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "zustand": "5.0.3"
+  },
+  "devDependencies": {
+    "@types/node": "22.10.5",
+    "@types/react": "18.3.18",
+    "@types/react-dom": "18.3.5",
+    "@vitejs/plugin-react": "4.3.4",
+    "autoprefixer": "10.4.20",
+    "electron": "34.5.3",
+    "electron-builder": "25.1.8",
+    "electron-vite": "2.3.0",
+    "postcss": "8.4.49",
+    "tailwindcss": "3.4.17",
+    "typescript": "5.7.3",
+    "vite": "5.4.11",
+    "vitest": "2.1.8"
+  }
+}

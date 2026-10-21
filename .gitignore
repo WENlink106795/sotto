@@ -1,0 +1,47 @@
+# Build output
+node_modules/
+out/
+dist/
+release/
+coverage/
+*.tsbuildinfo
+
+# Binaries and packaging inputs (use GitHub Releases for exe)
+*.exe
+*.msi
+*.appx
+*.blockmap
+*.7z
+*.zip
+resources/ffmpeg/*
+!resources/ffmpeg/README.md
+
+# Signing material: never commit private keys, pfx, passwords or certificates
+build/signing/
+*.pfx
+*.pvk
+*.pem
+*.key
+*.cer
+*.crt
+*.p12
+.env
+.env.*
+*.secret
+
+# Local tools (portable MinGit/gh used for publishing)
+.tools/
+
+# Local test/demo data
+demo-library/
+.real-test/
+.tmp-ui/
+/screenshots/
+*.log
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/

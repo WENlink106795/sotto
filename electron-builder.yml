@@ -1,0 +1,66 @@
+appId: io.github.sotto
+productName: Sotto
+copyright: Copyright © 2026 Sotto contributors
+
+directories:
+  output: release
+  buildResources: build
+
+files:
+  - out/**/*
+  - package.json
+  - '!out/**/*.map'
+
+extraResources:
+  - from: resources/ffmpeg/${arch}
+    to: ffmpeg
+    filter:
+      - ffmpeg.exe
+      - LICENSE.txt
+  - from: resources/ffmpeg/README.md
+    to: ffmpeg/README.md
+
+asar: true
+compression: normal
+
+win:
+  icon: build/icon.ico
+  requestedExecutionLevel: asInvoker
+  signtoolOptions:
+    signingHashAlgorithms:
+      - sha256
+    rfc3161TimeStampServer: http://timestamp.digicert.com
+  target:
+    - target: nsis
+      arch:
+        - x64
+        - ia32
+    - target: portable
+      arch:
+        - x64
+        - ia32
+
+nsis:
+  artifactName: Sotto-Setup-${version}-${arch}.${ext}
+  oneClick: false
+  perMachine: false
+  allowElevation: true
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: always
+  createStartMenuShortcut: true
+  shortcutName: Sotto
+  uninstallDisplayName: Sotto 耳畔
+  installerLanguages:
+    - zh_CN
+    - en_US
+  language: '2052'
+  deleteAppDataOnUninstall: false
+
+portable:
+  artifactName: Sotto-${version}-${arch}-portable.${ext}
+
+electronLanguages:
+  - zh-CN
+  - en-US
+
+publish: null

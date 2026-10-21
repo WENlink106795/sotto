@@ -1,0 +1,26 @@
+export const IPC = {
+  appInfo: 'app:info',
+  pickFolder: 'app:pick-folder',
+  pickFfmpeg: 'app:pick-ffmpeg',
+  openPath: 'app:open-path',
+  revealPath: 'app:reveal-path',
+  openExternal: 'app:open-external',
+  scan: 'library:scan',
+  plan: 'library:plan',
+  apply: 'library:apply',
+  undo: 'library:undo',
+  history: 'library:history',
+  subtitlePreview: 'subtitle:preview',
+  settingsGet: 'settings:get',
+  settingsSave: 'settings:save',
+  ffmpegInfo: 'ffmpeg:info',
+  windowMinimize: 'window:minimize',
+  windowToggleMaximize: 'window:toggle-maximize',
+  windowClose: 'window:close',
+  windowIsMaximized: 'window:is-maximized'
+} as const;
+
+export const IPC_EVENTS = {
+  progress: 'event:progress',
+  windowMaximized: 'event:window-maximized'
+} as const;
