@@ -51,6 +51,7 @@ export interface MurmurApi {
   pickConverterOutput(): Promise<string | null>;
   scanConverter(request: ConverterRequest): Promise<ConverterScan>;
   startConverter(request: ConverterRequest): Promise<ConverterResult>;
+  readClipboardText(): Promise<string>;
 
   windowMinimize(): void;
   windowToggleMaximize(): void;

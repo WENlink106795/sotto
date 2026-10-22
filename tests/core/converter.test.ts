@@ -76,6 +76,31 @@ describe('scanConverter', () => {
     expect(progress.length).toBeGreaterThan(0);
   });
 
+  it('converts multiple files with the requested file-level parallelism', async () => {
+    if (!ffmpegPath) return;
+    temporaryDirectory = await createTempDir('sotto-converter-');
+    for (const name of ['a', 'b']) {
+      const generated = await runFfmpeg(ffmpegPath, [
+        '-y', '-hide_banner', '-loglevel', 'error', '-f', 'lavfi', '-i', 'sine=frequency=440:duration=0.4',
+        '-c:a', 'pcm_s16le', path.join(temporaryDirectory, name + '.wav')
+      ]);
+      expect(generated.ok).toBe(true);
+    }
+    const details: string[] = [];
+    const result = await convertWithFfmpeg(
+      { source: temporaryDirectory, outputDir: null, format: 'mp3', bitrateKbps: 128, recursive: false, parallelism: 2 },
+      'converter-parallel-test',
+      (event) => details.push(event.detail),
+      ffmpegPath
+    );
+    expect(result.success).toBe(2);
+    expect(details.some((detail) => detail.includes('并发 2'))).toBe(true);
+    for (const name of ['a.mp3', 'b.mp3']) {
+      const stat = await fs.stat(path.join(temporaryDirectory, 'Sotto-converted', name));
+      expect(stat.size).toBeGreaterThan(0);
+    }
+  });
+
   it('uses the source parent for a single file', async () => {
     temporaryDirectory = await createTempDir('sotto-converter-');
     const file = path.join(temporaryDirectory, 'single.flac');

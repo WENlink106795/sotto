@@ -151,6 +151,7 @@ export interface ConverterRequest {
   format: ConverterFormat;
   bitrateKbps: number;
   recursive: boolean;
+  parallelism?: number;
   engine?: ConverterEngineId;
   threads?: number;
 }

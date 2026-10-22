@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react';
-import { ExternalLink, FileAudio, FolderOpen, FolderTree, Play, RefreshCw, RotateCcw } from 'lucide-react';
+import { useEffect, useState, type DragEvent } from 'react';
+import { ClipboardPaste, ExternalLink, FileAudio, FolderOpen, FolderTree, Play, RefreshCw, RotateCcw, Upload } from 'lucide-react';
 import type {
   ConverterFormat,
   ConverterProgress,
@@ -32,6 +32,7 @@ export default function ConverterPanel(): JSX.Element {
   const [source, setSource] = useState<string | null>(null);
   const [outputDir, setOutputDir] = useState<string | null>(null);
   const [recursive, setRecursive] = useState(true);
+  const [parallelism, setParallelism] = useState(0);
   const [format, setFormat] = useState<ConverterFormat>(settings.convert.format);
   const [bitrateKbps, setBitrateKbps] = useState(settings.convert.bitrateKbps);
   const [scan, setScan] = useState<ConverterScan | null>(null);
@@ -40,6 +41,7 @@ export default function ConverterPanel(): JSX.Element {
   const [busy, setBusy] = useState(false);
   const [scanning, setScanning] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [dragging, setDragging] = useState(false);
 
   useEffect(() => {
     return api.onConverterProgress((event) => setProgress(event));
@@ -58,6 +60,7 @@ export default function ConverterPanel(): JSX.Element {
         format,
         bitrateKbps,
         recursive,
+        parallelism,
         threads: 0
       });
       setScan(next);
@@ -75,6 +78,40 @@ export default function ConverterPanel(): JSX.Element {
     setSource(picked);
     setOutputDir(null);
     await refreshScan(picked, null);
+  }
+
+  async function applySource(pathValue: string): Promise<void> {
+    const nextPath = pathValue.trim().replace(/^"|"$/g, '');
+    if (!nextPath) return;
+    setSource(nextPath);
+    setOutputDir(null);
+    await refreshScan(nextPath, null);
+  }
+
+  async function pasteSource(): Promise<void> {
+    try {
+      const text = await api.readClipboardText();
+      if (!text.trim()) {
+        notify({ kind: 'warning', title: '剪贴板没有路径', message: '先在资源管理器复制文件或文件夹，再点一次。' });
+        return;
+      }
+      await applySource(text);
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : String(reason));
+    }
+  }
+
+  function handleDrop(event: DragEvent<HTMLDivElement>): void {
+    event.preventDefault();
+    setDragging(false);
+    const file = event.dataTransfer.files[0];
+    if (!file) return;
+    const pathValue = api.getPathForFile(file);
+    if (!pathValue) {
+      setError('无法读取拖入路径');
+      return;
+    }
+    void applySource(pathValue);
   }
 
   async function pickOutput(): Promise<void> {
@@ -97,6 +134,7 @@ export default function ConverterPanel(): JSX.Element {
         format,
         bitrateKbps,
         recursive,
+        parallelism,
         threads: 0
       });
       setResult(next);
@@ -118,7 +156,20 @@ export default function ConverterPanel(): JSX.Element {
   const percent = progress ? Math.max(0, Math.min(100, progress.overallPercent)) : 0;
 
   return (
-    <div className="converter-panel">
+    <div
+      className={'converter-panel' + (dragging ? ' is-dragging' : '')}
+      onDragEnter={(event) => { event.preventDefault(); setDragging(true); }}
+      onDragOver={(event) => { event.preventDefault(); event.dataTransfer.dropEffect = 'copy'; }}
+      onDragLeave={(event) => { if (!event.currentTarget.contains(event.relatedTarget as Node)) setDragging(false); }}
+      onDrop={handleDrop}
+      onPaste={(event) => {
+        const text = event.clipboardData.getData('text');
+        if (text.trim()) {
+          event.preventDefault();
+          void applySource(text);
+        }
+      }}
+    >
       <div className="converter-source-row">
         <div className="converter-source-main">
           <FileAudio size={15} />
@@ -135,7 +186,16 @@ export default function ConverterPanel(): JSX.Element {
             <FolderOpen size={13} />
             选文件夹
           </Button>
+          <Button variant="ghost" size="sm" onClick={() => void pasteSource()} disabled={busy}>
+            <ClipboardPaste size={13} />
+            粘贴路径
+          </Button>
         </div>
+      </div>
+
+      <div className="converter-drop-hint">
+        <Upload size={13} />
+        可以直接把文件或文件夹拖进来，也可以从资源管理器复制路径后点「粘贴路径」。
       </div>
 
       <SettingRow
@@ -194,6 +254,18 @@ export default function ConverterPanel(): JSX.Element {
           description="只对文件夹生效；单个文件不受影响。"
           control={<Switch checked={recursive} onChange={(value) => { setRecursive(value); if (source) void refreshScan(source, outputDir); }} label="递归子文件夹" />}
         />
+        <div className="converter-option-grid converter-parallel-grid">
+          <div>
+            <span className="converter-label">同时转码文件数</span>
+            <Segmented
+              value={String(parallelism)}
+              options={[{ value: '0', label: '自动' }, { value: '1', label: '1' }, { value: '2', label: '2' }, { value: '4', label: '4' }]}
+              onChange={(value) => setParallelism(Number(value))}
+              ariaLabel="同时转码文件数"
+            />
+            <p className="converter-field-hint">自动按 CPU 核心数选择 1–4 个并发文件。</p>
+          </div>
+        </div>
         <Button variant="ghost" size="sm" onClick={() => void refreshScan()} disabled={!source || scanning || busy}>
           <RefreshCw size={13} className={scanning ? 'spin' : undefined} />
           重新扫描

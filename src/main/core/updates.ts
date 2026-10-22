@@ -24,11 +24,17 @@ interface GitHubRelease {
 }
 
 export function compareVersions(left: string, right: string): number {
-  const normalize = (value: string): (number | string)[] =>
-    value.replace(/^v/i, '').split(/[.+-]/).map((part) => {
+  const normalize = (value: string): (number | string)[] => {
+    const stripped = value.replace(/^v/i, '');
+    const revision = /^(\d+(?:\.\d+)*)([a-z])$/i.exec(stripped);
+    if (revision) {
+      return [...revision[1].split('.').map(Number), revision[2].toLowerCase().charCodeAt(0) - 96];
+    }
+    return stripped.split(/[.+-]/).map((part) => {
       const number = Number(part);
       return Number.isFinite(number) ? number : part;
     });
+  };
   const a = normalize(left);
   const b = normalize(right);
   const length = Math.max(a.length, b.length);

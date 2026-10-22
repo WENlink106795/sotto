@@ -854,6 +854,9 @@ export function createMockApi(): MurmurApi {
         recursive: request.recursive
       };
     },
+    async readClipboardText(): Promise<string> {
+      return '';
+    },
     async startConverter(request: ConverterRequest): Promise<ConverterResult> {
       await delay(160, 260);
       const now = Date.now();

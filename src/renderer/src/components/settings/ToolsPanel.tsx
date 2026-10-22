@@ -16,6 +16,10 @@ export default function ToolsPanel(): JSX.Element {
   const checkUpdates = useAppStore((state) => state.checkUpdates);
   const updateChecking = useAppStore((state) => state.updateChecking);
   const updateInfo = useAppStore((state) => state.updateInfo);
+  const updateDownloading = useAppStore((state) => state.updateDownloading);
+  const updateDownloadedPath = useAppStore((state) => state.updateDownloadedPath);
+  const startUpdateDownload = useAppStore((state) => state.startUpdateDownload);
+  const installUpdate = useAppStore((state) => state.installUpdate);
   const resetAppearance = useAppStore((state) => state.resetAppearance);
   const ffmpeg = useAppStore((state) => state.ffmpeg);
   const [loggingConsentOpen, setLoggingConsentOpen] = useState(false);
@@ -164,6 +168,20 @@ export default function ToolsPanel(): JSX.Element {
             <RefreshCw size={13} className={updateChecking ? 'spin' : undefined} />
             {updateChecking ? '正在检查…' : '检查更新'}
           </Button>
+          {updateInfo?.hasUpdate ? (
+            <Button
+              variant="primary"
+              size="sm"
+              disabled={updateDownloading || !updateInfo.assetUrl}
+              onClick={() => {
+                if (updateDownloadedPath) void installUpdate();
+                else void startUpdateDownload();
+              }}
+            >
+              <Download size={13} className={updateDownloading ? 'spin' : undefined} />
+              {updateDownloading ? '正在下载…' : updateDownloadedPath ? '安装并重启' : '一键下载更新'}
+            </Button>
+          ) : null}
           <Button variant="ghost" size="sm" onClick={() => { void api.openExternal('https://github.com/WENlink106795/sotto').catch(() => undefined); }}>
             <Github size={13} />
             GitHub 仓库
@@ -178,13 +196,18 @@ export default function ToolsPanel(): JSX.Element {
         className="settings-consent-modal"
         labelledBy="logging-consent-title"
       >
-        <h3 className="modal-title" id="logging-consent-title">开启本地诊断日志？</h3>
+        <div className="modal-head">
+          <div className="modal-head-main">
+            <h3 className="modal-title" id="logging-consent-title">开启本地诊断日志？</h3>
+            <p className="modal-sub">只保存在本机，可随时关闭。</p>
+          </div>
+        </div>
         <div className="modal-body">
           <p>日志只保存在这台电脑的 %APPDATA%\Sotto\logs，不会自动上传，也不会读取你的作品内容。</p>
           <p>为了排查崩溃和转码问题，日志会记录应用版本、错误堆栈、文件路径与操作摘要；导出时会把用户主目录替换为 ~，但仍可能包含作品文件夹名。</p>
           <p>你可以随时在「设置 › 工具」关闭日志记录。关闭后不会再写入新的日志。</p>
         </div>
-        <div className="tools-actions">
+        <div className="modal-foot">
           <Button variant="ghost" size="sm" onClick={() => setLoggingConsentOpen(false)}>取消</Button>
           <Button
             variant="primary"

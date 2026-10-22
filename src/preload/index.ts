@@ -46,6 +46,7 @@ const api: MurmurApi = {
   pickConverterOutput: () => invoke(IPC.converterPickOutput),
   scanConverter: (request) => invoke(IPC.converterScan, request),
   startConverter: (request) => invoke(IPC.converterStart, request),
+  readClipboardText: () => invoke(IPC.converterClipboard),
 
   windowMinimize: () => ipcRenderer.send(IPC.windowMinimize),
   windowToggleMaximize: () => ipcRenderer.send(IPC.windowToggleMaximize),

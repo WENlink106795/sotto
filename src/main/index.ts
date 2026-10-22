@@ -406,6 +406,8 @@ function registerIpc(): void {
     return result.filePaths[0];
   });
 
+  handle<string>(IPC.converterClipboard, async () => clipboard.readText());
+
   handle<ConverterScan>(IPC.converterScan, async (request: ConverterRequest) => scanConverter(request));
 
   handle<ConverterResult>(IPC.converterStart, async (request: ConverterRequest) => {

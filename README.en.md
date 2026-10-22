@@ -83,7 +83,7 @@ npm run pack:win                      # electron-builder: NSIS + portable
 ```
 
 - The 64-bit installer is recommended; an **ia32 (32-bit)** build is also provided for older devices. Electron is pinned to 34.x because later versions no longer publish Windows 32-bit binaries.
-- Local build: **0.1.3 x64 standard** (`release-final-0.1.3/Sotto-Setup-0.1.3-x64.exe` / `Sotto-0.1.3-x64-portable.exe`, embedding the OpenConverter core).
+- Local build: **0.1.3b x64 standard** (`release-final-0.1.3b/Sotto-Setup-0.1.3b-x64.exe` / `Sotto-0.1.3-x64-portable.exe`, embedding the OpenConverter core).
 - Full benchmark: [docs/BENCHMARK.md](docs/BENCHMARK.md).
 
 ### Acknowledgements

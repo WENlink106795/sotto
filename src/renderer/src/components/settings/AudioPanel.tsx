@@ -70,41 +70,9 @@ export default function AudioPanel(): JSX.Element {
             }
           />
 
-          <SettingRow
-            title="多线程转码"
-            description="按 CPU 自动选择线程数，或手动指定。FFmpeg 音频编码器可能只使用其中一部分线程；这不是多文件并发。"
-            control={
-              <Switch
-                checked={convert.concurrency !== 1}
-                onChange={(enabled) => updateSettings({ convert: { concurrency: enabled ? 0 : 1 } })}
-                label="多线程转码"
-              />
-            }
-          />
-
-          {convert.concurrency !== 1 ? (
-            <SettingRow
-              title="线程数"
-              description="自动模式按 CPU 核心数的一半计算，最多 16 线程。"
-              control={
-                <Segmented
-                  value={String(convert.concurrency)}
-                  options={[
-                    { value: '0', label: '自动' },
-                    { value: '2', label: '2' },
-                    { value: '4', label: '4' },
-                    { value: '8', label: '8' }
-                  ]}
-                  onChange={(value) => updateSettings({ convert: { concurrency: Number(value) } })}
-                  ariaLabel="转码线程数"
-                />
-              }
-            />
-          ) : null}
-
           <div className="callout">
             <Info size={14} />
-            GPU 对 WAV/FLAC 到 MP3/M4A 的音频编码没有稳定收益，Sotto 不会提供看起来启用但实际无效的 GPU 开关；多线程只影响 FFmpeg 的编码线程。
+            所有音频转码统一使用 OpenConverter 内核；需要多文件同时转码时，请到侧栏「转码工具」设置并发数。
           </div>
 
           <SettingRow

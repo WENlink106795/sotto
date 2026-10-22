@@ -84,7 +84,7 @@ npm run pack:win                      # electron-builder 生成 nsis + portable
 ```
 
 - 推荐 64 位安装包；同时提供 **ia32（32 位）** 构建以覆盖老设备。Electron 固定在 34.x，因为后续版本不再发布 Windows 32 位二进制。
-- 本地已生成 **0.1.3 x64 标准版**：`release-final-0.1.3/Sotto-Setup-0.1.3-x64.exe` / `Sotto-0.1.3-x64-portable.exe`（内嵌 OpenConverter 核心）。
+- 本地已生成 **0.1.3b x64 标准版**：`release-final-0.1.3b/Sotto-Setup-0.1.3b-x64.exe` / `Sotto-0.1.3-x64-portable.exe`（内嵌 OpenConverter 核心）。
 - 四款引擎的完整对比见 [docs/BENCHMARK.md](docs/BENCHMARK.md)：OpenConverter 总耗时最短。
 
 ### 致谢

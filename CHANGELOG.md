@@ -2,29 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.1.3] - 2026-10-22
+## [0.1.3b] - 2026-10-22
 
 ### Added
 
-- Full-audio benchmark: 4 formats (MP3/AAC/M4A/OGG) × 3 bitrates (128/192/320k) on a 73-minute WAV, measuring wall time, output size, CPU time and CPU utilization.
-- Embedded the best speed/license candidate: OpenConverter's audio command core, with audio-only stream handling and a corrected raw AAC/ADTS path.
-- Standalone converter now shows conversion wall time and total output size after completion.
-- Added AAC and OGG output to the standalone converter.
+- 侧栏独立「转码工具」：单文件或整个文件夹批量转码，默认输出到源目录下的 `Sotto-converted`，可手动指定或恢复默认。
+- 支持 MP3 / AAC / M4A / OGG，128k / 192k / 256k / 320k；递归扫描、实时文件夹与文件进度。
+- 内嵌 OpenConverter 音频 FFmpeg 命令核心（Apache-2.0），并采用纯音频 `-vn` 处理和 raw AAC/ADTS 修正；资料库批量转码也统一走该核心。
+- 转码完成后显示实际耗时（墙钟时间）与成品总大小。
+- 多文件并发转码：自动或手动选择 1 / 2 / 4 个文件同时转码；输出名预分配，避免同名文件互相覆盖。
+- 转码工具支持拖入文件/文件夹，或从资源管理器复制路径后点「粘贴路径」。
+- 4 格式 × 3 码率基准报告：`docs/BENCHMARK.md`。
+
+### Fixed
+
+- 修复「记录本地诊断日志」确认弹窗标题、正文和按钮贴边/被裁切的问题，改用标准 modal-head / modal-body / modal-foot 布局。
+- 手动检查更新发现新版本后，工具页直接提供「一键下载更新」/「安装并重启」按钮；修正 `0.1.3b` 这类尾部字母版本的比较规则。
+- 「已用时间」改为真实墙钟耗时，不再使用 ffmpeg 输出的媒体时间戳。
+- 统一所有音频转码路径使用同一个 OpenConverter 内核参数。
 
 ### Notes
 
-- MuXolotl-Converter is GPL-2.0/LGPL-2.1; its core was benchmarked only and is not embedded in Sotto.
-- The test file included an attached cover; benchmark reruns use audio-only stream handling so sizes compare the audio payload.
-- All engines use the same bundled FFmpeg binary and sequential execution.
-
-## [0.1.2] - 2026-10-22
-
-### Added
-
-- Standalone FFmpeg converter page (sidebar): single-file or folder batch conversion to MP3/M4A.
-- Default output directory is `Sotto-converted` beside the source; optional manual output directory.
-- Recursive folder scanning, target format/bitrate selection, per-file progress, result summary, and source-safe output naming (no overwrite).
-- Converter core tests cover folder scan, single-file default output, recursion, and a real WAV-to-MP3 run.
+- MuXolotl-Converter 仅用于基准对比（GPL-2.0/LGPL-2.1），不进入标准版代码或发行包。
+- 基准测试统一使用随包 FFmpeg、纯音频输出和顺序执行；测试文件含封面，已单独说明。
+- 自签名证书仅本机受信任；多语言界面仍未完成。
 
 ## [0.1.1] - 2026-10-22
 

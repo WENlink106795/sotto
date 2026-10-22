@@ -26,6 +26,7 @@ export const IPC = {
   converterPickOutput: 'converter:pick-output',
   converterScan: 'converter:scan',
   converterStart: 'converter:start',
+  converterClipboard: 'converter:clipboard',
   windowMinimize: 'window:minimize',
   windowToggleMaximize: 'window:toggle-maximize',
   windowClose: 'window:close',

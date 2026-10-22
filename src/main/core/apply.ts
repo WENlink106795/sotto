@@ -17,6 +17,7 @@ import type {
   UndoResult
 } from '@shared/types';
 import { probeDurationMs, runFfmpeg } from './ffmpeg';
+import { buildConverterArgs } from './converter-engines';
 import { convertSubtitleFile } from './subtitle';
 import {
   ensureDir,
@@ -694,40 +695,12 @@ async function executeConvertAudio(task: ApplyTask, state: ExecutionState): Prom
   }
   const format = conversion.format;
   const temporary = uniqueTempPath(path.dirname(to), 'sotto-audio', '.' + format);
-  const codecArguments =
-    format === 'm4a'
-      ? ['-c:a', 'aac', '-b:a', conversion.bitrateKbps + 'k', '-movflags', '+faststart']
-      : [
-          '-c:a',
-          'libmp3lame',
-          '-b:a',
-          conversion.bitrateKbps + 'k',
-          '-id3v2_version',
-          '3',
-          '-write_id3v1',
-          '1'
-        ];
-  const args = [
-    '-y',
-    '-hide_banner',
-    '-loglevel',
-    'error',
-    '-i',
-    from,
-    '-map',
-    '0:a:0',
-    '-vn',
-    '-map_metadata',
-    '0',
-    '-threads',
-    String(resolveThreads(state.settings.convert.concurrency)),
-    ...codecArguments,
-    temporary
-  ];
+  const args = ['-hide_banner', '-loglevel', 'error', ...buildConverterArgs(from, temporary, format, conversion.bitrateKbps)];
   try {
     const durationMs = await probeDurationMs(from, state.ctx.ffmpeg.path).catch(() => null);
       const taskIndex = state.currentIndex;
       const taskTotal = state.totalTasks;
+      const wallStartedAt = Date.now();
       const result = await runFfmpeg(state.ctx.ffmpeg.path, args, undefined, (progress) => {
         const fileFraction = durationMs && durationMs > 0
           ? Math.min(0.99, Math.max(0, progress.timeMs / durationMs))
@@ -741,7 +714,7 @@ async function executeConvertAudio(task: ApplyTask, state: ExecutionState): Prom
           taskIndex + fileFraction,
           taskTotal,
           '正在转码：' + pair.audio.name + (percent === null ? '' : '（' + percent + '%）'),
-          '已用 ' + formatElapsed(progress.timeMs) + ' · 当前 ' + (taskIndex + 1) + ' / ' + taskTotal,
+          '已用 ' + formatElapsed(Date.now() - wallStartedAt) + ' · 当前 ' + (taskIndex + 1) + ' / ' + taskTotal,
           'info'
         );
       });

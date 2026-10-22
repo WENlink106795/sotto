@@ -1372,3 +1372,47 @@ html[data-theme='studio'] .modal {
   color: color-mix(in srgb, var(--success) 70%, var(--text-tertiary));
   font-size: 0.64rem;
 }
+
+
+.converter-options-row {
+  flex-wrap: wrap;
+}
+
+.converter-option-grid.converter-parallel-grid {
+  flex: 1 0 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+.converter-field-hint {
+  margin: 5px 0 0;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+}
+
+
+.converter-drop-hint {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 10px;
+  border: 1px dashed var(--border-subtle);
+  border-radius: 8px;
+  color: var(--text-tertiary);
+  font-size: 0.64rem;
+  line-height: 1.4;
+  transition: border-color 150ms ease, background 150ms ease;
+}
+
+.converter-panel.is-dragging .converter-drop-hint {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+
+.converter-panel.is-dragging {
+  outline: 1px dashed var(--accent);
+  outline-offset: 4px;
+  border-radius: 10px;
+}
