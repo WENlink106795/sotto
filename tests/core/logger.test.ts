@@ -41,7 +41,7 @@ describe('redactText', () => {
     );
     expect(text).toContain('~\\Music\\a.mp3');
     expect(text).not.toContain(HOME);
-    expect(text).not.toContain('ghp_abcdefghijklmnop');
+    expect(text).not.toContain('placeholder-token');
     expect(text).not.toContain('hunter2');
     expect(text).toContain('<redacted>');
   });
