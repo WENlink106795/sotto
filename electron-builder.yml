@@ -12,6 +12,10 @@ files:
   - '!out/**/*.map'
 
 extraResources:
+  - from: licenses
+    to: licenses
+  - from: THIRD_PARTY_NOTICES.md
+    to: THIRD_PARTY_NOTICES.md
   - from: resources/ffmpeg/${arch}
     to: ffmpeg
     filter:

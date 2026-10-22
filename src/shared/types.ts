@@ -9,6 +9,8 @@ export interface RendererLogEntry {
   meta?: Record<string, unknown>;
 }
 export type AudioFormat = 'mp3' | 'm4a';
+export type ConverterFormat = 'mp3' | 'aac' | 'm4a' | 'ogg';
+export type ConverterEngineId = 'openconverter';
 export type ThemePreset = 'fluent' | 'material' | 'studio';
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type Density = 'compact' | 'comfortable';
@@ -141,6 +143,67 @@ export interface UpdateInfo {
   checksumUrl: string | null;
   publishedAt: string;
   notes: string;
+}
+
+export interface ConverterRequest {
+  source: string;
+  outputDir?: string | null;
+  format: ConverterFormat;
+  bitrateKbps: number;
+  recursive: boolean;
+  engine?: ConverterEngineId;
+  threads?: number;
+}
+
+export interface ConverterFile {
+  path: string;
+  name: string;
+  ext: string;
+  size: number;
+  targetPath: string;
+}
+
+export interface ConverterScan {
+  source: string;
+  sourceKind: 'file' | 'folder';
+  outputDir: string;
+  files: ConverterFile[];
+  totalBytes: number;
+  recursive: boolean;
+}
+
+export interface ConverterProgress {
+  runId: string;
+  current: number;
+  total: number;
+  overallPercent: number;
+  filePercent: number | null;
+  message: string;
+  detail: string;
+  level: 'info' | 'warn' | 'error';
+  at: number;
+}
+
+export interface ConverterItemResult {
+  sourcePath: string;
+  outputPath: string;
+  status: 'success' | 'failed' | 'skipped';
+  message: string;
+  bytes: number;
+}
+
+export interface ConverterResult {
+  runId: string;
+  engine: ConverterEngineId;
+  source: string;
+  outputDir: string;
+  total: number;
+  success: number;
+  failed: number;
+  skipped: number;
+  items: ConverterItemResult[];
+  startedAt: number;
+  finishedAt: number;
 }
 
 export interface UpdateProgress {

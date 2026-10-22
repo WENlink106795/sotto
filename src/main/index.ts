@@ -11,13 +11,17 @@ import type {
   IpcResult,
   PlanRequest,
   ProgressEvent,
+  ConverterProgress,
+  ConverterRequest,
+  ConverterResult,
+  ConverterScan,
   RendererLogEntry,
   Settings,
   UpdateInfo,
   UpdateProgress
 } from '../shared/types';
 import { loadSettings, saveSettings } from './settings-store';
-import { cloneSettings, mergeSettings } from '../shared/defaults';
+import { AUDIO_EXTENSIONS, cloneSettings, mergeSettings } from '../shared/defaults';
 import { detectFfmpeg } from './core/ffmpeg';
 import { scanLibrary } from './core/scan';
 import { buildPlan } from './core/plan';
@@ -25,6 +29,7 @@ import { applyPlan, listHistory, undoRunById } from './core/apply';
 import { previewSubtitle } from './core/subtitle';
 import { AppLogger } from './core/logger';
 import { checkForUpdates, downloadUpdate } from './core/updates';
+import { convertWithFfmpeg, scanConverter } from './core/converter';
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -62,6 +67,12 @@ function sendProgress(event: ProgressEvent): void {
 function sendUpdateProgress(progress: UpdateProgress): void {
   if (mainWindow && !mainWindow.isDestroyed()) {
     mainWindow.webContents.send(IPC_EVENTS.updateProgress, progress);
+  }
+}
+
+function sendConverterProgress(progress: ConverterProgress): void {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    mainWindow.webContents.send(IPC_EVENTS.converterProgress, progress);
   }
 }
 
@@ -373,6 +384,50 @@ function registerIpc(): void {
       });
       throw error;
     }
+  });
+
+  handle<string | null>(IPC.converterPickSource, async (mode: 'file' | 'folder') => {
+    const isFolder = mode === 'folder';
+    const result = await dialog.showOpenDialog(getWindow(), {
+      title: isFolder ? '选择要转码的文件夹' : '选择要转码的音频文件',
+      properties: isFolder ? ['openDirectory'] : ['openFile'],
+      filters: isFolder ? undefined : [{ name: '音频文件', extensions: AUDIO_EXTENSIONS }]
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    return result.filePaths[0];
+  });
+
+  handle<string | null>(IPC.converterPickOutput, async () => {
+    const result = await dialog.showOpenDialog(getWindow(), {
+      title: '选择转码输出目录',
+      properties: ['openDirectory', 'createDirectory']
+    });
+    if (result.canceled || result.filePaths.length === 0) return null;
+    return result.filePaths[0];
+  });
+
+  handle<ConverterScan>(IPC.converterScan, async (request: ConverterRequest) => scanConverter(request));
+
+  handle<ConverterResult>(IPC.converterStart, async (request: ConverterRequest) => {
+    const ffmpeg = await getFfmpeg();
+    if (!ffmpeg.available) throw new Error('未检测到 ffmpeg，无法转码');
+    const runId = crypto.randomUUID();
+    void logger?.info('converter', 'started', { source: request.source, format: request.format });
+    const result = await convertWithFfmpeg(
+      request,
+      runId,
+      (progress) => sendConverterProgress(progress),
+      ffmpeg.path
+    );
+    void logger?.info('converter', 'finished', {
+      runId: result.runId,
+      total: result.total,
+      success: result.success,
+      failed: result.failed,
+      skipped: result.skipped,
+      outputDir: result.outputDir
+    });
+    return result;
   });
 
   handle<void>(IPC.updateInstall, async (filePath: string) => {

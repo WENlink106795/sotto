@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import type { MurmurApi } from '../shared/api';
 import { IPC, IPC_EVENTS } from '../shared/ipc';
-import type { IpcResult, ProgressEvent, UpdateInfo, UpdateProgress } from '../shared/types';
+import type { ConverterProgress, IpcResult, ProgressEvent, UpdateInfo, UpdateProgress } from '../shared/types';
 
 async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   const result = (await ipcRenderer.invoke(channel, ...args)) as IpcResult<T>;
@@ -42,6 +42,10 @@ const api: MurmurApi = {
   checkForUpdates: (force) => invoke(IPC.updateCheck, Boolean(force)),
   downloadUpdate: (info: UpdateInfo) => invoke(IPC.updateDownload, info) as Promise<string>,
   installUpdate: (filePath: string) => invoke(IPC.updateInstall, filePath),
+  pickConverterSource: (mode) => invoke(IPC.converterPickSource, mode),
+  pickConverterOutput: () => invoke(IPC.converterPickOutput),
+  scanConverter: (request) => invoke(IPC.converterScan, request),
+  startConverter: (request) => invoke(IPC.converterStart, request),
 
   windowMinimize: () => ipcRenderer.send(IPC.windowMinimize),
   windowToggleMaximize: () => ipcRenderer.send(IPC.windowToggleMaximize),
@@ -69,6 +73,11 @@ const api: MurmurApi = {
     const wrapped = (_event: unknown, payload: UpdateProgress) => listener(payload);
     ipcRenderer.on(IPC_EVENTS.updateProgress, wrapped);
     return () => ipcRenderer.removeListener(IPC_EVENTS.updateProgress, wrapped);
+  },
+  onConverterProgress: (listener) => {
+    const wrapped = (_event: unknown, payload: ConverterProgress) => listener(payload);
+    ipcRenderer.on(IPC_EVENTS.converterProgress, wrapped);
+    return () => ipcRenderer.removeListener(IPC_EVENTS.converterProgress, wrapped);
   }
 };
 

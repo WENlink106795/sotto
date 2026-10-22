@@ -25,6 +25,10 @@ import type {
   PlanRequest,
   PlanResult,
   PlanWarning,
+  ConverterProgress,
+  ConverterRequest,
+  ConverterResult,
+  ConverterScan,
   ProgressEvent,
   RendererLogEntry,
   RunRecord,
@@ -831,6 +835,42 @@ export function createMockApi(): MurmurApi {
     async installUpdate(): Promise<void> {
       await delay(80, 120);
     },
+    async pickConverterSource(): Promise<string | null> {
+      await delay(80, 120);
+      return null;
+    },
+    async pickConverterOutput(): Promise<string | null> {
+      await delay(80, 120);
+      return null;
+    },
+    async scanConverter(request: ConverterRequest): Promise<ConverterScan> {
+      await delay(80, 120);
+      return {
+        source: request.source,
+        sourceKind: 'folder',
+        outputDir: request.outputDir || request.source + '\\Sotto-converted',
+        files: [],
+        totalBytes: 0,
+        recursive: request.recursive
+      };
+    },
+    async startConverter(request: ConverterRequest): Promise<ConverterResult> {
+      await delay(160, 260);
+      const now = Date.now();
+      return {
+        runId: 'demo',
+        engine: 'openconverter',
+        source: request.source,
+        outputDir: request.outputDir || request.source + '\\Sotto-converted',
+        total: 0,
+        success: 0,
+        failed: 0,
+        skipped: 0,
+        items: [],
+        startedAt: now,
+        finishedAt: now
+      };
+    },
     windowMinimize(): void {
       /* browser preview */
     },
@@ -856,6 +896,10 @@ export function createMockApi(): MurmurApi {
       return () => undefined;
     },
     onUpdateProgress(listener: (progress: UpdateProgress) => void): () => void {
+      void listener;
+      return () => undefined;
+    },
+    onConverterProgress(listener: (progress: ConverterProgress) => void): () => void {
       void listener;
       return () => undefined;
     }

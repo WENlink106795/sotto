@@ -2,6 +2,30 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.3] - 2026-10-22
+
+### Added
+
+- Full-audio benchmark: 4 formats (MP3/AAC/M4A/OGG) × 3 bitrates (128/192/320k) on a 73-minute WAV, measuring wall time, output size, CPU time and CPU utilization.
+- Embedded the best speed/license candidate: OpenConverter's audio command core, with audio-only stream handling and a corrected raw AAC/ADTS path.
+- Standalone converter now shows conversion wall time and total output size after completion.
+- Added AAC and OGG output to the standalone converter.
+
+### Notes
+
+- MuXolotl-Converter is GPL-2.0/LGPL-2.1; its core was benchmarked only and is not embedded in Sotto.
+- The test file included an attached cover; benchmark reruns use audio-only stream handling so sizes compare the audio payload.
+- All engines use the same bundled FFmpeg binary and sequential execution.
+
+## [0.1.2] - 2026-10-22
+
+### Added
+
+- Standalone FFmpeg converter page (sidebar): single-file or folder batch conversion to MP3/M4A.
+- Default output directory is `Sotto-converted` beside the source; optional manual output directory.
+- Recursive folder scanning, target format/bitrate selection, per-file progress, result summary, and source-safe output naming (no overwrite).
+- Converter core tests cover folder scan, single-file default output, recursion, and a real WAV-to-MP3 run.
+
 ## [0.1.1] - 2026-10-22
 
 ### Added

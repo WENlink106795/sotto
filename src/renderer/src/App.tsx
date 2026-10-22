@@ -6,6 +6,7 @@ import Sidebar from './components/Sidebar';
 import BootScreen from './components/BootScreen';
 import LibraryView from './components/LibraryView';
 import HistoryView from './components/HistoryView';
+import ConverterView from './components/ConverterView';
 import SettingsView from './components/SettingsView';
 import CoverPicker from './components/CoverPicker';
 import ProgressOverlay from './components/ProgressOverlay';
@@ -44,7 +45,7 @@ export default function App(): JSX.Element {
             </div>
           ) : (
             <div className="view-enter" key={view}>
-              {view === 'library' ? <LibraryView /> : view === 'history' ? <HistoryView /> : <SettingsView />}
+              {view === 'library' ? <LibraryView /> : view === 'history' ? <HistoryView /> : view === 'converter' ? <ConverterView /> : <SettingsView />}
             </div>
           )}
         </main>

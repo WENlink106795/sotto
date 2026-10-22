@@ -32,6 +32,7 @@ The UI ships with three themes — **Fluent**, **Material You**, and **Studio** 
 - **Safe by design** — build a complete plan before touching files; two-phase renames avoid collisions; run history, journal, and one-click undo; deletions go to the Recycle Bin by default.
 - **Logs and diagnostics** — main/renderer errors, uncaught exceptions, IPC failures, and scan/plan/apply summaries are written to a rotating local log. **Settings › Tools** exports a `.log` bundle with environment details and recent apply logs; the user home directory is redacted.
 - **Batch mode** — drag an entire `[ASMR]` root folder in, use current settings as a preset, then auto-pair, normalize names, convert subtitles, and optionally transcode or pick covers before one click on **Apply**.
+- **Standalone converter** — use the sidebar converter to transcode a single file or a whole folder to MP3/AAC/M4A/OGG. Output defaults to a new `Sotto-converted` folder beside the source, with optional custom output, recursion, format, bitrate, and live progress. Source files are never modified. The standard build embeds the OpenConverter audio core (Apache-2.0) and displays elapsed time and output size.
 - **Cross-folder matching** — subtitles are searched within three directory levels; covers can come from descendants or explicitly named cover art in parent/sibling folders up to two levels away; scene images are never guessed.
 - **Threaded transcoding** — FFmpeg encoding threads can be automatic or manual. There is deliberately no fake GPU toggle for audio encoding; most audio encoders use only a subset of threads. Concurrent multi-file conversion is still on the roadmap.
 - **Updates and settings portability** — check GitHub Releases, enable a once-per-day update prompt, download the signed installer inside the app with SHA-256 verification, and export/import settings as JSON. Update checks only contact GitHub.
@@ -82,7 +83,12 @@ npm run pack:win                      # electron-builder: NSIS + portable
 ```
 
 - The 64-bit installer is recommended; an **ia32 (32-bit)** build is also provided for older devices. Electron is pinned to 34.x because later versions no longer publish Windows 32-bit binaries.
-- The local **0.1.1 x64 test build** is available as `release-test/Sotto-Setup-0.1.1-x64.exe` and `release-test/Sotto-0.1.1-x64-portable.exe`, with checksums in `release-test/SHA256SUMS.txt`; both are also attached to GitHub Releases.
+- Local build: **0.1.3 x64 standard** (`release-final-0.1.3/Sotto-Setup-0.1.3-x64.exe` / `Sotto-0.1.3-x64-portable.exe`, embedding the OpenConverter core).
+- Full benchmark: [docs/BENCHMARK.md](docs/BENCHMARK.md).
+
+### Acknowledgements
+
+The audio transcoding core is from [OpenConverter](https://github.com/nowa277/OpenConverter) (Apache-2.0); thanks to nowa277 and contributors. Benchmarking also thanks the authors of [HandForge](https://github.com/VoxHash/HandForge) and [MuXolotl-Converter](https://github.com/MuXolotl/MuXolotl-Converter).
 - These builds use a local self-signed certificate (valid on the build machine via `Get-AuthenticodeSignature`; Defender found no threats there). Other machines need `build/signing/sotto-selfsigned.cer` to trust them. Use a CA certificate for public releases; see [docs/SIGNING.md](docs/SIGNING.md) (Chinese).
 - Without a bundled ffmpeg, subtitle conversion, naming, and cover renaming still work. Audio transcoding and image-to-JPEG conversion require an `ffmpeg.exe` configured in Settings.
 - Licensing for release builds and ffmpeg is covered in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

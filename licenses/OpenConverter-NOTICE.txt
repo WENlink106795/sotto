@@ -1,0 +1,15 @@
+OpenConverter
+=============
+
+Copyright (c) 2026 nowa277 and contributors
+Source: https://github.com/nowa277/OpenConverter
+License: Apache License 2.0 (see OpenConverter-LICENSE.txt)
+
+Sotto's standalone converter uses an audio-only FFmpeg argument path adapted
+from OpenConverter's desktop ffmpeg command core (src/main/ffmpeg.js).
+The GUI, media decoders, network integrations, Android code and
+Electron shell of OpenConverter are not included.
+
+OpenConverter is licensed under the Apache License, Version 2.0.
+You may obtain a copy of the license at:
+https://www.apache.org/licenses/LICENSE-2.0

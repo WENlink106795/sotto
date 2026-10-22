@@ -1,6 +1,11 @@
 import type {
   AppInfo,
   ApplyRequest,
+  AudioFormat,
+  ConverterProgress,
+  ConverterRequest,
+  ConverterResult,
+  ConverterScan,
   RendererLogEntry,
   ApplyResult,
   FfmpegInfo,
@@ -42,6 +47,11 @@ export interface MurmurApi {
   downloadUpdate(info: UpdateInfo): Promise<string>;
   installUpdate(filePath: string): Promise<void>;
 
+  pickConverterSource(mode: 'file' | 'folder'): Promise<string | null>;
+  pickConverterOutput(): Promise<string | null>;
+  scanConverter(request: ConverterRequest): Promise<ConverterScan>;
+  startConverter(request: ConverterRequest): Promise<ConverterResult>;
+
   windowMinimize(): void;
   windowToggleMaximize(): void;
   windowClose(): void;
@@ -51,4 +61,5 @@ export interface MurmurApi {
   onProgress(listener: (event: ProgressEvent) => void): () => void;
   onWindowMaximized(listener: (maximized: boolean) => void): () => void;
   onUpdateProgress(listener: (progress: UpdateProgress) => void): () => void;
+  onConverterProgress(listener: (progress: ConverterProgress) => void): () => void;
 }

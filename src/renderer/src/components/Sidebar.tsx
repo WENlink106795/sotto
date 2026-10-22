@@ -1,4 +1,4 @@
-import { ChevronRight, Download, FolderOpen, Folder, History, Library, Settings2, ShieldCheck } from 'lucide-react';
+import { AudioLines, ChevronRight, Download, FolderOpen, Folder, History, Library, Settings2, ShieldCheck } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { formatRelative } from '../lib/format';
 import { useAppStore } from '../store/useAppStore';
@@ -7,6 +7,7 @@ import type { ViewKey } from '../lib/capture';
 const NAV: { key: ViewKey; label: string; icon: typeof Library }[] = [
   { key: 'library', label: '资料库', icon: Library },
   { key: 'history', label: '运行历史', icon: History },
+  { key: 'converter', label: '转码工具', icon: AudioLines },
   { key: 'settings', label: '设置', icon: Settings2 }
 ];
 

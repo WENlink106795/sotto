@@ -1,6 +1,6 @@
 {
   "name": "sotto",
-  "version": "0.1.1",
+  "version": "0.1.3",
   "description": "Sotto — ASMR library organizer for players: VTT/SRT to LRC, filename sanitizing, cover art and audio transcoding.",
   "main": "./out/main/index.js",
   "author": "Sotto contributors",

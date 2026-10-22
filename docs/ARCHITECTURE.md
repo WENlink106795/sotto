@@ -13,6 +13,7 @@
 │   index.ts（窗口/IPC/图像协议）                      │           │
 │   core/scan.ts  core/plan.ts  core/subtitle.ts       │           │
 │   core/apply.ts  core/journal  core/ffmpeg.ts        │
+│   core/converter.ts（独立批量转码，源文件只读）       │
   core/logger.ts（滚动日志、脱敏、诊断包）             │
   core/updates.ts（GitHub Release 检查/校验下载）        │           │
 │   settings-store.ts（%APPDATA%/Sotto/settings.json） │           │
@@ -81,6 +82,15 @@
 
 已有 LRC 与 VTT 同时存在时，优先使用 LRC，避免重复转换。字幕格式优先级为 LRC > VTT > SRT > TXT：同一音频存在多种等价字幕时，避免把 TXT 剧本重复转换。
 自动封面（可选）只会在候选图片有明确 cover/folder/front/album/封面 命名、或文件夹内只有一张图片时自动选取；候选过多且命名不明确时跳过并提示，避免把 Scenes/CG 图误当封面。
+
+## 独立转码
+
+- `core/converter.ts` 扫描单个文件或文件夹，读取音频扩展名，计算默认输出目录 `Sotto-converted`。
+- 输出目录默认在源目录旁；手动指定时直接使用。转换只写新文件，不移动/删除源文件。
+- 每个目标文件写临时文件，完成后原子 rename；同名目标通过 `nextAvailablePath` 追加序号。
+- 逐文件调用 `core/ffmpeg.ts` 的 `runFfmpeg`，复用 `-progress pipe:1` 的单文件进度。
+- IPC 走 `converter:scan` / `converter:start`，进度通过 `event:converter-progress` 推送到渲染进程。
+- 测试：`tests/core/converter.test.ts` 覆盖文件夹扫描、递归、单文件默认输出和真实 WAV→MP3。
 
 ## 音频转码
 

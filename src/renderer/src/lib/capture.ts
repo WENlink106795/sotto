@@ -1,6 +1,6 @@
 import type { ThemeMode, ThemePreset } from '@shared/types';
 
-export type ViewKey = 'library' | 'history' | 'settings';
+export type ViewKey = 'library' | 'history' | 'converter' | 'settings';
 
 export interface RuntimeConfig {
   capture: boolean;

@@ -22,6 +22,10 @@ export const IPC = {
   updateDownload: 'update:download',
   updateInstall: 'update:install',
   updateOpenPage: 'update:open-page',
+  converterPickSource: 'converter:pick-source',
+  converterPickOutput: 'converter:pick-output',
+  converterScan: 'converter:scan',
+  converterStart: 'converter:start',
   windowMinimize: 'window:minimize',
   windowToggleMaximize: 'window:toggle-maximize',
   windowClose: 'window:close',
@@ -31,5 +35,6 @@ export const IPC = {
 export const IPC_EVENTS = {
   progress: 'event:progress',
   windowMaximized: 'event:window-maximized',
-  updateProgress: 'event:update-progress'
+  updateProgress: 'event:update-progress',
+  converterProgress: 'event:converter-progress'
 } as const;
