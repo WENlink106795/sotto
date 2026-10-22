@@ -30,8 +30,13 @@ The UI ships with three themes — **Fluent**, **Material You**, and **Studio** 
 - **Cover selection** — scans images in the work folder and its subfolders, then renames the chosen image to `cover.jpg` (or folder/front/album/封面), converting to JPEG with ffmpeg when needed. Batch mode can auto-pick a clearly named cover and refuses to guess when many candidates exist.
 - **Optional audio transcoding** — WAV / FLAC / APE / AIFF / ALAC / WMA → MP3 (libmp3lame) or M4A (AAC), preserving metadata and optionally moving originals to the Recycle Bin.
 - **Safe by design** — build a complete plan before touching files; two-phase renames avoid collisions; run history, journal, and one-click undo; deletions go to the Recycle Bin by default.
+- **Logs and diagnostics** — main/renderer errors, uncaught exceptions, IPC failures, and scan/plan/apply summaries are written to a rotating local log. **Settings › Tools** exports a `.log` bundle with environment details and recent apply logs; the user home directory is redacted.
 - **Batch mode** — drag an entire `[ASMR]` root folder in, use current settings as a preset, then auto-pair, normalize names, convert subtitles, and optionally transcode or pick covers before one click on **Apply**.
-- **Local-first** — no account, no telemetry, no network requests. Settings and logs live only in `%APPDATA%\Sotto`.
+- **Cross-folder matching** — subtitles are searched within three directory levels; covers can come from descendants or explicitly named cover art in parent/sibling folders up to two levels away; scene images are never guessed.
+- **Threaded transcoding** — FFmpeg encoding threads can be automatic or manual. There is deliberately no fake GPU toggle for audio encoding; most audio encoders use only a subset of threads. Concurrent multi-file conversion is still on the roadmap.
+- **Updates and settings portability** — check GitHub Releases, enable a once-per-day update prompt, download the signed installer inside the app with SHA-256 verification, and export/import settings as JSON. Update checks only contact GitHub.
+- **Privacy-first defaults** — diagnostic logging is off by default, with an explicit consent dialog; crashes point to the log location for manual reporting.
+- **Local-first** — no account, no telemetry, and no network requests by default. Only a manual update check or opt-in auto-update contacts GitHub Releases; it never uploads local files or logs. Settings and logs live only in `%APPDATA%\Sotto`.
 
 ## Themes
 
@@ -77,7 +82,7 @@ npm run pack:win                      # electron-builder: NSIS + portable
 ```
 
 - The 64-bit installer is recommended; an **ia32 (32-bit)** build is also provided for older devices. Electron is pinned to 34.x because later versions no longer publish Windows 32-bit binaries.
-- The signed v0.1.0 release includes `Sotto-Setup-0.1.0-x64.exe` / `Sotto-Setup-0.1.0-ia32.exe` and `Sotto-0.1.0-x64-portable.exe` / `Sotto-0.1.0-ia32-portable.exe`; checksums are in `SHA256SUMS.txt` on the release page.
+- The local **0.1.1 x64 test build** is available as `release-test/Sotto-Setup-0.1.1-x64.exe` and `release-test/Sotto-0.1.1-x64-portable.exe`, with checksums in `release-test/SHA256SUMS.txt`; both are also attached to GitHub Releases.
 - These builds use a local self-signed certificate (valid on the build machine via `Get-AuthenticodeSignature`; Defender found no threats there). Other machines need `build/signing/sotto-selfsigned.cer` to trust them. Use a CA certificate for public releases; see [docs/SIGNING.md](docs/SIGNING.md) (Chinese).
 - Without a bundled ffmpeg, subtitle conversion, naming, and cover renaming still work. Audio transcoding and image-to-JPEG conversion require an `ffmpeg.exe` configured in Settings.
 - Licensing for release builds and ffmpeg is covered in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
@@ -87,7 +92,7 @@ npm run pack:win                      # electron-builder: NSIS + portable
 - The repository contains no tokens, passwords, private keys, PFX files, or real user data.
 - `.gitignore` excludes `build/signing/`, `*.pfx`, `*.key`, `*.env`, `release/`, `resources/ffmpeg/*`, and similar artifacts.
 - Release executables are uploaded only to GitHub Releases and never enter git history.
-- The app has no account system, telemetry, or network requests; all file processing is local.
+- The app has no account system or telemetry and is offline by default. Only manual/opt-in update checks contact GitHub; they never upload files, paths, or logs. All file processing is local.
 
 ## Project layout
 

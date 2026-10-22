@@ -42,7 +42,8 @@ import {
 
 const FUZZY_THRESHOLD = 0.78;
 const AMBIGUITY_MARGIN = 0.02;
-const MAX_CROSS_FOLDER_DISTANCE = 2;
+const MAX_CROSS_FOLDER_DISTANCE = 3;
+const MAX_COVER_FOLDER_DISTANCE = 2;
 const MAX_COVER_CANDIDATES = 200;
 
 const AUDIO_EXTENSION_SET = new Set(AUDIO_EXTENSIONS.map((value) => value.toLowerCase()));
@@ -644,11 +645,26 @@ function buildPairPlan(
 
 function collectCoverCandidates(context: FolderContext, all: FolderContext[]): FileInfo[] {
   const files: FileInfo[] = [];
+  const seen = new Set<string>();
   for (const other of all) {
-    if (!isSameOrDescendantRelative(context.folder.relativePath, other.folder.relativePath)) {
-      continue;
+    const descendant = isSameOrDescendantRelative(
+      context.folder.relativePath,
+      other.folder.relativePath
+    );
+    const distance = relativeDirectoryDistance(
+      context.folder.relativePath,
+      other.folder.relativePath
+    );
+    if (!descendant && distance > MAX_COVER_FOLDER_DISTANCE) continue;
+    for (const image of other.images) {
+      if (!descendant && !/^(cover|folder|front|album|jacket|封面|ジャケット|表紙)/i.test(image.base)) {
+        continue;
+      }
+      const key = toPathKey(image.path);
+      if (seen.has(key)) continue;
+      seen.add(key);
+      files.push(image);
     }
-    for (const image of other.images) files.push(image);
   }
   files.sort(
     (left, right) =>
@@ -698,6 +714,13 @@ function buildCoverPlan(
   const context = prepared.context;
   const image = prepared.image;
   const warnings: PlanWarning[] = [];
+  if (path.dirname(image.path).toLowerCase() !== context.folder.path.toLowerCase()) {
+    warnings.push({
+      code: 'cover-cross-folder',
+      severity: 'info',
+      message: '封面来自相近文件夹：' + image.name
+    });
+  }
   const coverName = (settings.cover.name || 'cover').replace(/[\\/:*?"<>|]/g, '').trim() || 'cover';
   const wantsJpeg =
     prepared.convertToJpeg === undefined ? settings.cover.convertToJpeg : prepared.convertToJpeg;

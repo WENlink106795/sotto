@@ -1,15 +1,18 @@
 import type {
   AppInfo,
   ApplyRequest,
+  RendererLogEntry,
   ApplyResult,
   FfmpegInfo,
   PlanRequest,
   PlanResult,
   ProgressEvent,
+  UpdateInfo,
   RunRecord,
   ScanResult,
   Settings,
   SubtitlePreview,
+  UpdateProgress,
   UndoResult
 } from './types';
 
@@ -31,6 +34,13 @@ export interface MurmurApi {
   getSettings(): Promise<Settings>;
   saveSettings(settings: Settings): Promise<Settings>;
   getFfmpegInfo(refresh?: boolean): Promise<FfmpegInfo>;
+  log(entry: RendererLogEntry): Promise<void>;
+  exportLogs(): Promise<string | null>;
+  exportSettings(): Promise<string | null>;
+  importSettings(): Promise<Settings | null>;
+  checkForUpdates(force?: boolean): Promise<UpdateInfo | null>;
+  downloadUpdate(info: UpdateInfo): Promise<string>;
+  installUpdate(filePath: string): Promise<void>;
 
   windowMinimize(): void;
   windowToggleMaximize(): void;
@@ -40,4 +50,5 @@ export interface MurmurApi {
 
   onProgress(listener: (event: ProgressEvent) => void): () => void;
   onWindowMaximized(listener: (maximized: boolean) => void): () => void;
+  onUpdateProgress(listener: (progress: UpdateProgress) => void): () => void;
 }

@@ -2,6 +2,26 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.1.1] - 2026-10-22
+
+### Added
+
+- Cross-folder subtitle matching up to three directory levels; cover candidates can include explicitly named covers from parent/sibling folders.
+- Per-file FFmpeg progress via `-progress pipe:1`: filename, elapsed time, operation index and file percentage.
+- Optional FFmpeg thread count (automatic CPU-based or manual); no misleading GPU audio toggle.
+- Update checker, daily in-app update prompt, silent GitHub Release download with SHA-256 verification and install flow.
+- Settings export/import JSON and manual GitHub repository link.
+- Opt-in diagnostic logging with a consent dialog; crash dialogs show the log path.
+- Green privacy badge styling.
+- Local rotating diagnostic log for main/renderer errors, uncaught exceptions, IPC failures, and scan/plan/apply summaries.
+- One-click diagnostics export in Settings > Tools, bundling environment details, settings summary, recent app log, and recent apply logs with home-directory redaction.
+- Renderer error boundary and global error/unhandled-rejection reporting to the local log.
+
+### Notes
+
+- This release is Chinese-first; full Chinese/English/Japanese UI localization is still pending.
+- Multi-threading controls FFmpeg encoder threads, not concurrent multi-file conversion; GPU audio encoding is intentionally not offered.
+
 ## [0.1.0] - 2026-10-21
 
 ### Added

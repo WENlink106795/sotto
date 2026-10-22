@@ -1,4 +1,13 @@
 export type FileKind = 'audio' | 'subtitle' | 'image' | 'text';
+export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+export interface RendererLogEntry {
+  level: LogLevel;
+  message: string;
+  stack?: string;
+  source?: string;
+  meta?: Record<string, unknown>;
+}
 export type AudioFormat = 'mp3' | 'm4a';
 export type ThemePreset = 'fluent' | 'material' | 'studio';
 export type ThemeMode = 'system' | 'light' | 'dark';
@@ -102,10 +111,13 @@ export interface RecentLibrary {
 }
 
 export interface GeneralSettings {
-  language: 'zh-CN' | 'en-US';
+  language: 'zh-CN' | 'en-US' | 'ja-JP';
   ffmpegPath: string;
   recentRoots: RecentLibrary[];
   showAdvanced: boolean;
+  loggingEnabled: boolean;
+  autoUpdate: boolean;
+  lastUpdatePrompt: string;
 }
 
 export interface Settings {
@@ -116,6 +128,27 @@ export interface Settings {
   cover: CoverSettings;
   convert: ConvertSettings;
   general: GeneralSettings;
+}
+
+export interface UpdateInfo {
+  currentVersion: string;
+  latestVersion: string;
+  hasUpdate: boolean;
+  releaseUrl: string;
+  assetName: string | null;
+  assetUrl: string | null;
+  assetSize: number | null;
+  checksumUrl: string | null;
+  publishedAt: string;
+  notes: string;
+}
+
+export interface UpdateProgress {
+  phase: 'downloading' | 'verifying' | 'ready' | 'error';
+  downloaded: number;
+  total: number;
+  percent: number;
+  message: string;
 }
 
 export interface AppInfo {

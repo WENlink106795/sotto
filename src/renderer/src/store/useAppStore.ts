@@ -15,7 +15,9 @@ import type {
   ScanResult,
   Settings,
   SubtitleSettings,
-  ThemeSettings
+  ThemeSettings,
+  UpdateInfo,
+  UpdateProgress
 } from '@shared/types';
 import { api, bridgeMode } from '../lib/bridge';
 import { runtimeConfig, type ViewKey } from '../lib/capture';
@@ -107,6 +109,21 @@ export interface AppStore {
   windowToggleMaximize: () => void;
   windowClose: () => void;
   openPath: (targetPath: string) => Promise<void>;
+  exportLogs: () => Promise<void>;
+  exportSettings: () => Promise<void>;
+  importSettings: () => Promise<void>;
+  updateInfo: UpdateInfo | null;
+  updatePromptOpen: boolean;
+  updateChecking: boolean;
+  updateDownloading: boolean;
+  updateProgress: UpdateProgress | null;
+  updateDownloadedPath: string | null;
+  updateError: string | null;
+  checkUpdates: (force?: boolean, manual?: boolean) => Promise<void>;
+  dismissUpdatePrompt: () => void;
+  startUpdateDownload: () => Promise<void>;
+  installUpdate: () => Promise<void>;
+  openReleasePage: () => Promise<void>;
 }
 
 let toastSeq = 0;
@@ -239,6 +256,13 @@ export const useAppStore = create<AppStore>()((set, get) => {
     expanded: {},
     toasts: [],
     windowMaximized: false,
+    updateInfo: null,
+    updatePromptOpen: false,
+    updateChecking: false,
+    updateDownloading: false,
+    updateProgress: null,
+    updateDownloadedPath: null,
+    updateError: null,
 
     async boot() {
       if (get().booted) return;
@@ -665,6 +689,118 @@ export const useAppStore = create<AppStore>()((set, get) => {
         api.windowClose();
       } catch {
         /* window unavailable */
+      }
+    },
+
+    async exportLogs() {
+      try {
+        const saved = await api.exportLogs();
+        if (!saved) {
+          notify({ kind: 'info', title: '已取消导出' });
+          return;
+        }
+        notify({ kind: 'success', title: '诊断日志已导出', message: saved });
+      } catch (error) {
+        fail('导出诊断日志失败', error);
+      }
+    },
+
+    async exportSettings() {
+      try {
+        const saved = await api.exportSettings();
+        if (!saved) {
+          notify({ kind: 'info', title: '已取消导出设置' });
+          return;
+        }
+        notify({ kind: 'success', title: '设置已导出', message: saved });
+      } catch (error) {
+        fail('导出设置失败', error);
+      }
+    },
+
+    async importSettings() {
+      try {
+        const saved = await api.importSettings();
+        if (!saved) return;
+        cacheSettings(saved);
+        applyTheme(saved.theme);
+        set({ settings: saved, settingsSaving: 'saved' });
+        notify({ kind: 'success', title: '设置已导入', message: '主题与偏好已更新。' });
+      } catch (error) {
+        fail('导入设置失败', error);
+      }
+    },
+
+    async checkUpdates(force = false, manual = false) {
+      if (get().updateChecking) return;
+      set({ updateChecking: true });
+      try {
+        const info = await api.checkForUpdates(force);
+        set({ updateChecking: false, updateInfo: info });
+        if (!info) {
+          if (manual) notify({ kind: 'error', title: '检查更新失败', message: '无法连接 GitHub，请稍后再试。' });
+          return;
+        }
+        if (!info.hasUpdate) {
+          if (manual) notify({ kind: 'success', title: '已是最新版本', message: 'v' + info.currentVersion });
+          return;
+        }
+        const today = new Date().toISOString().slice(0, 10);
+        const auto = get().settings.general.autoUpdate;
+        if (!manual && (!auto || get().settings.general.lastUpdatePrompt === today)) return;
+        set({ updatePromptOpen: true });
+        if (!manual) {
+          const next = {
+            ...get().settings,
+            general: { ...get().settings.general, lastUpdatePrompt: today }
+          };
+          cacheSettings(next);
+          set({ settings: next });
+          void api.saveSettings(next).catch(() => undefined);
+        }
+      } catch (error) {
+        set({ updateChecking: false });
+        if (manual) fail('检查更新失败', error);
+      }
+    },
+
+    dismissUpdatePrompt() {
+      set({ updatePromptOpen: false });
+    },
+
+    async startUpdateDownload() {
+      const info = get().updateInfo;
+      if (!info || !info.assetUrl) {
+        notify({ kind: 'error', title: '没有可下载的安装包', message: '请前往 GitHub Releases 手动下载。' });
+        return;
+      }
+      set({ updateDownloading: true, updateDownloadedPath: null, updateError: null });
+      try {
+        const saved = await api.downloadUpdate(info);
+        set({ updateDownloading: false, updateDownloadedPath: saved });
+        notify({ kind: 'success', title: '更新已下载', message: '可以点击「安装并重启」完成升级。' });
+      } catch (error) {
+        set({ updateDownloading: false });
+        fail('下载更新失败', error);
+      }
+    },
+
+    async installUpdate() {
+      const target = get().updateDownloadedPath;
+      if (!target) return;
+      try {
+        await api.installUpdate(target);
+      } catch (error) {
+        fail('启动安装程序失败', error);
+      }
+    },
+
+    async openReleasePage() {
+      const url = get().updateInfo?.releaseUrl || 'https://github.com/WENlink106795/sotto/releases/latest';
+      try {
+        await api.openExternal(url);
+      } catch (error) {
+        fail('无法打开下载页面', error);
       }
     },
 

@@ -1,7 +1,7 @@
 import { contextBridge, ipcRenderer, webUtils } from 'electron';
 import type { MurmurApi } from '../shared/api';
 import { IPC, IPC_EVENTS } from '../shared/ipc';
-import type { IpcResult, ProgressEvent } from '../shared/types';
+import type { IpcResult, ProgressEvent, UpdateInfo, UpdateProgress } from '../shared/types';
 
 async function invoke<T>(channel: string, ...args: unknown[]): Promise<T> {
   const result = (await ipcRenderer.invoke(channel, ...args)) as IpcResult<T>;
@@ -35,6 +35,13 @@ const api: MurmurApi = {
   getSettings: () => invoke(IPC.settingsGet),
   saveSettings: (settings) => invoke(IPC.settingsSave, settings),
   getFfmpegInfo: (refresh) => invoke(IPC.ffmpegInfo, Boolean(refresh)),
+  log: (entry) => invoke(IPC.logWrite, entry),
+  exportLogs: () => invoke(IPC.exportLogs),
+  exportSettings: () => invoke(IPC.settingsExport),
+  importSettings: () => invoke(IPC.settingsImport),
+  checkForUpdates: (force) => invoke(IPC.updateCheck, Boolean(force)),
+  downloadUpdate: (info: UpdateInfo) => invoke(IPC.updateDownload, info) as Promise<string>,
+  installUpdate: (filePath: string) => invoke(IPC.updateInstall, filePath),
 
   windowMinimize: () => ipcRenderer.send(IPC.windowMinimize),
   windowToggleMaximize: () => ipcRenderer.send(IPC.windowToggleMaximize),
@@ -57,6 +64,11 @@ const api: MurmurApi = {
     const wrapped = (_event: unknown, maximized: boolean) => listener(maximized);
     ipcRenderer.on(IPC_EVENTS.windowMaximized, wrapped);
     return () => ipcRenderer.removeListener(IPC_EVENTS.windowMaximized, wrapped);
+  },
+  onUpdateProgress: (listener) => {
+    const wrapped = (_event: unknown, payload: UpdateProgress) => listener(payload);
+    ipcRenderer.on(IPC_EVENTS.updateProgress, wrapped);
+    return () => ipcRenderer.removeListener(IPC_EVENTS.updateProgress, wrapped);
   }
 };
 

@@ -1,4 +1,4 @@
-import { ChevronRight, FolderOpen, Folder, History, Library, Settings2, ShieldCheck } from 'lucide-react';
+import { ChevronRight, Download, FolderOpen, Folder, History, Library, Settings2, ShieldCheck } from 'lucide-react';
 import { cn } from '../lib/cn';
 import { formatRelative } from '../lib/format';
 import { useAppStore } from '../store/useAppStore';
@@ -20,6 +20,9 @@ export default function Sidebar(): JSX.Element {
   const applying = useAppStore((state) => state.applying);
   const plan = useAppStore((state) => state.plan);
   const historyCount = useAppStore((state) => state.history.length);
+  const updateDownloading = useAppStore((state) => state.updateDownloading);
+  const updateInfo = useAppStore((state) => state.updateInfo);
+  const updateProgress = useAppStore((state) => state.updateProgress);
 
   return (
     <aside className="app-sidebar" aria-label="主导航">
@@ -80,6 +83,18 @@ export default function Sidebar(): JSX.Element {
           })
         )}
       </div>
+
+      {updateDownloading ? (
+        <div className="update-download">
+          <div className="update-download-label">
+            <span><Download size={11} style={{ verticalAlign: '-1px', marginRight: 4 }} />正在下载 Sotto {updateInfo?.latestVersion || ''}</span>
+            <span>{updateProgress?.percent || 0}%</span>
+          </div>
+          <div className="update-download-track">
+            <div className="update-download-fill" style={{ width: Math.max(2, Math.min(100, updateProgress?.percent || 0)) + '%' }} />
+          </div>
+        </div>
+      ) : null}
 
       <button type="button" className="btn btn-secondary btn-sm btn-block sidebar-open" onClick={() => void pickFolder()}>
         <FolderOpen size={14} />

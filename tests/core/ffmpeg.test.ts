@@ -55,6 +55,35 @@ describe('probeDurationMs', () => {
     expect(await probeDurationMs(bogus, ffmpegPath)).toBeNull();
   });
 
+  it('reports progress while encoding', async () => {
+    if (!available) return;
+    const target = path.join(temporaryDirectory || '.', 'progress.m4a');
+    const progress: number[] = [];
+    const result = await runFfmpeg(
+      ffmpegPath,
+      [
+        '-y',
+        '-hide_banner',
+        '-loglevel',
+        'error',
+        '-f',
+        'lavfi',
+        '-i',
+        'sine=frequency=440:duration=2',
+        '-c:a',
+        'aac',
+        '-b:a',
+        '128k',
+        target
+      ],
+      60000,
+      (event) => progress.push(event.timeMs)
+    );
+    expect(result.ok).toBe(true);
+    expect(progress.length).toBeGreaterThan(0);
+    expect(Math.max(...progress)).toBeGreaterThan(0);
+  });
+
   it('reads a generated WAV duration', async () => {
     if (!available) return;
     const target = path.join(temporaryDirectory || '.', 'tone.wav');

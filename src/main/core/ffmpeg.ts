@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, spawn } from 'node:child_process';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
 import type { FfmpegInfo } from '@shared/types';
@@ -18,6 +18,10 @@ export interface CommandResult {
   stdout: string;
   stderr: string;
   error: string | null;
+}
+
+export interface FfmpegProgress {
+  timeMs: number;
 }
 
 /**
@@ -381,7 +385,8 @@ export async function probeDurationMs(filePath: string, ffmpegPath: string): Pro
 export async function runFfmpeg(
   ffmpegPath: string,
   args: string[],
-  timeoutMs: number = CONVERT_TIMEOUT_MS
+  timeoutMs: number = CONVERT_TIMEOUT_MS,
+  onProgress?: (progress: FfmpegProgress) => void
 ): Promise<CommandResult> {
   if (!ffmpegPath || !ffmpegPath.trim()) {
     return {
@@ -392,5 +397,96 @@ export async function runFfmpeg(
       error: 'ffmpeg path is empty'
     };
   }
-  return executeCommand(ffmpegPath, args, timeoutMs);
+  if (!onProgress) return executeCommand(ffmpegPath, args, timeoutMs);
+  return runFfmpegStreaming(ffmpegPath, args, timeoutMs, onProgress);
+}
+
+function runFfmpegStreaming(
+  ffmpegPath: string,
+  args: string[],
+  timeoutMs: number,
+  onProgress: (progress: FfmpegProgress) => void
+): Promise<CommandResult> {
+  return new Promise((resolve) => {
+    let settled = false;
+    let stdout = '';
+    let stderr = '';
+    let pending = '';
+    let lastReportedMs = -1;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const finish = (result: CommandResult): void => {
+      if (settled) return;
+      settled = true;
+      if (timer) clearTimeout(timer);
+      resolve(result);
+    };
+
+    const child = spawn(ffmpegPath, [...args, '-progress', 'pipe:1', '-nostats'], {
+      windowsHide: true,
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+
+    const report = (timeMs: number): void => {
+      if (!Number.isFinite(timeMs) || timeMs < 0) return;
+      if (timeMs - lastReportedMs < 350) return;
+      lastReportedMs = timeMs;
+      try {
+        onProgress({ timeMs });
+      } catch {
+        // A progress listener must never break ffmpeg.
+      }
+    };
+
+    child.stdout?.setEncoding('utf8');
+    child.stdout?.on('data', (chunk: string) => {
+      stdout += chunk;
+      if (stdout.length > MAX_BUFFER) stdout = stdout.slice(-MAX_BUFFER);
+      pending += chunk;
+      const lines = pending.split(/\r?\n/);
+      pending = lines.pop() || '';
+      for (const line of lines) {
+        const match = /^out_time_(?:us|ms)=(\d+)/.exec(line);
+        if (match) report(Number(match[1]) / 1000);
+      }
+    });
+
+    child.stderr?.setEncoding('utf8');
+    child.stderr?.on('data', (chunk: string) => {
+      stderr += chunk;
+      if (stderr.length > MAX_BUFFER) stderr = stderr.slice(-MAX_BUFFER);
+    });
+
+    child.on('error', (error) => {
+      finish({ ok: false, code: null, stdout, stderr, error: error.message });
+    });
+
+    child.on('close', (code) => {
+      // Flush a final progress line if ffmpeg ended without a trailing newline.
+      const match = /out_time_(?:us|ms)=(\d+)/.exec(pending);
+      if (match) report(Number(match[1]) / 1000);
+      finish({
+        ok: code === 0,
+        code,
+        stdout,
+        stderr,
+        error: code === 0 ? null : stderr.trim().split(/\r?\n/).slice(-1)[0] || 'ffmpeg exited with ' + code
+      });
+    });
+
+    timer = setTimeout(() => {
+      try {
+        child.kill();
+      } catch {
+        // The process may already have exited.
+      }
+      finish({
+        ok: false,
+        code: null,
+        stdout,
+        stderr,
+        error: 'ffmpeg timed out after ' + Math.round(timeoutMs / 1000) + ' seconds'
+      });
+    }, timeoutMs);
+  });
 }

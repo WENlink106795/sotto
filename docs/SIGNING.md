@@ -18,7 +18,7 @@
 - 公钥已导入：
   - `Cert:\CurrentUser\TrustedPublisher`
   - `Cert:\CurrentUser\Root`
-- 已签名的产物：`release/Sotto-0.1.0-*.exe`，本机 `Get-AuthenticodeSignature` 为 `Valid`。
+- 已签名的产物：`release/Sotto-0.1.0-*.exe` 与 `release-test/Sotto-0.1.1-x64*.exe`，本机 `Get-AuthenticodeSignature` 为 `Valid`。
 - 重新打包时 electron-builder 会读取 `CSC_LINK` / `CSC_KEY_PASSWORD`，签名内层 `Sotto.exe`、ffmpeg、安装包/便携版外壳。
 - 当前四个发行包（x64/ia32 的 setup 与 portable）签名状态均为 **Valid**；Windows Defender（`MpCmdRun -Scan -ScanType 3`）扫描四个文件均为 **found no threats**。这不代表所有杀毒软件、所有机器都不会误报。
 

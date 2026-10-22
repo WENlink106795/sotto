@@ -33,7 +33,7 @@ export async function saveSettings(input: Settings): Promise<Settings> {
   merged.naming.maxBaseLength = clampNumber(merged.naming.maxBaseLength, 20, 160, 100);
   merged.subtitle.offsetMs = clampNumber(merged.subtitle.offsetMs, -60000, 60000, 0);
   merged.convert.bitrateKbps = clampNumber(merged.convert.bitrateKbps, 64, 320, 192);
-  merged.convert.concurrency = clampNumber(merged.convert.concurrency, 1, 4, 1);
+  merged.convert.concurrency = clampNumber(merged.convert.concurrency, 0, 16, 1);
   merged.cover.name = (merged.cover.name || 'cover').replace(/[\\/:*?"<>|]/g, '').trim() || 'cover';
 
   const dir = path.dirname(settingsFile());

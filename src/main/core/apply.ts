@@ -1,6 +1,7 @@
 import crypto from 'node:crypto';
 import { promises as fs } from 'node:fs';
 import path from 'node:path';
+import os from 'node:os';
 import type {
   ApplyItem,
   ApplyItemKind,
@@ -15,7 +16,7 @@ import type {
   RunRecord,
   UndoResult
 } from '@shared/types';
-import { runFfmpeg } from './ffmpeg';
+import { probeDurationMs, runFfmpeg } from './ffmpeg';
 import { convertSubtitleFile } from './subtitle';
 import {
   ensureDir,
@@ -105,6 +106,8 @@ interface ExecutionState {
   renamedAudio: Set<string>;
   renameAudioSelected: boolean;
   convertedAudio: Map<string, string>;
+  currentIndex: number;
+  totalTasks: number;
 }
 
 const HISTORY_FILE = 'history.json';
@@ -149,6 +152,20 @@ function tailText(text: string, maxLength: number): string {
   const trimmed = text.trim();
   if (trimmed.length <= maxLength) return trimmed;
   return trimmed.slice(trimmed.length - maxLength);
+}
+
+function resolveThreads(requested: number): number {
+  if (requested > 0) return Math.max(1, Math.min(16, Math.round(requested)));
+  const cores = os.cpus().length || 4;
+  return Math.max(1, Math.min(16, Math.floor(cores / 2) || 1));
+}
+
+function formatElapsed(milliseconds: number): string {
+  const totalSeconds = Math.max(0, Math.floor(milliseconds / 1000));
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60).toString().padStart(2, '0');
+  const seconds = (totalSeconds % 60).toString().padStart(2, '0');
+  return hours > 0 ? hours + ':' + minutes + ':' + seconds : minutes + ':' + seconds;
 }
 
 async function loadJsonFile<T>(target: string): Promise<T | null> {
@@ -702,11 +719,32 @@ async function executeConvertAudio(task: ApplyTask, state: ExecutionState): Prom
     '-vn',
     '-map_metadata',
     '0',
+    '-threads',
+    String(resolveThreads(state.settings.convert.concurrency)),
     ...codecArguments,
     temporary
   ];
   try {
-    const result = await runFfmpeg(state.ctx.ffmpeg.path, args);
+    const durationMs = await probeDurationMs(from, state.ctx.ffmpeg.path).catch(() => null);
+      const taskIndex = state.currentIndex;
+      const taskTotal = state.totalTasks;
+      const result = await runFfmpeg(state.ctx.ffmpeg.path, args, undefined, (progress) => {
+        const fileFraction = durationMs && durationMs > 0
+          ? Math.min(0.99, Math.max(0, progress.timeMs / durationMs))
+          : 0;
+        const percent = durationMs && durationMs > 0
+          ? Math.min(99, Math.max(0, Math.round(fileFraction * 100)))
+          : null;
+        emitProgress(
+          state.ctx,
+          'audio',
+          taskIndex + fileFraction,
+          taskTotal,
+          '正在转码：' + pair.audio.name + (percent === null ? '' : '（' + percent + '%）'),
+          '已用 ' + formatElapsed(progress.timeMs) + ' · 当前 ' + (taskIndex + 1) + ' / ' + taskTotal,
+          'info'
+        );
+      });
     if (!result.ok) {
       await fs.unlink(temporary).catch(() => undefined);
       const detail = tailText(result.stderr || result.error || '', 400);
@@ -786,6 +824,8 @@ async function executeCover(task: ApplyTask, state: ExecutionState): Promise<Tas
       'error',
       '-i',
       from,
+      '-threads',
+      String(resolveThreads(state.settings.convert.concurrency)),
       '-frames:v',
       '1',
       '-q:v',
@@ -972,7 +1012,9 @@ export async function applyPlan(request: ApplyRequest, ctx: ApplyContext): Promi
     convertedSubtitles: new Set<string>(),
     renamedAudio: new Set<string>(),
     renameAudioSelected: Boolean(request.selection.renameAudio),
-    convertedAudio: new Map<string, string>()
+    convertedAudio: new Map<string, string>(),
+    currentIndex: 0,
+    totalTasks: tasks.length
   };
 
   const seenSources = new Set<string>();
@@ -996,6 +1038,9 @@ export async function applyPlan(request: ApplyRequest, ctx: ApplyContext): Promi
 
   for (let index = 0; index < tasks.length; index += 1) {
     const task = tasks[index];
+    state.currentIndex = index;
+    state.totalTasks = total;
+    emitProgress(ctx, task.phase, index, total, taskLabel(task), '当前 ' + (index + 1) + ' / ' + total, 'info');
     let resolution: TaskOutcome;
     try {
       switch (task.type) {

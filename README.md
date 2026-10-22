@@ -31,8 +31,13 @@ Sotto 是一款面向 ASMR / 音声作品收藏者的 **Windows 本地曲库整�
 - **封面选择**：扫描作品文件夹及子文件夹里的图片，选中后重命名为 `cover.jpg`（也可选 folder/front/album/封面），必要时用 ffmpeg 转成 JPEG。批量模式可开启“自动选择封面”，优先选择明确命名的图片，候选过多时不乱猜。
 - **可选音频转码**：WAV / FLAC / APE / AIFF / ALAC / WMA → MP3（libmp3lame）或 M4A（AAC），保留元数据，可把原文件移入回收站。
 - **安全整理**：先出完整方案再执行；两阶段重命名避免冲突；运行日志、历史记录与一键撤销；删除操作默认进回收站。
+- **日志与诊断**：主进程/渲染层错误、未捕获异常、IPC 失败、扫描/方案/执行摘要写入本地滚动日志；「设置 › 工具」可一键导出包含环境信息与最近整理日志的 `.log` 诊断包，用户主目录会自动脱敏。
 - **批量模式**：把整个 `[ASMR]` 根目录拖进来即可递归扫描；用设置作为预设，自动配对、统一命名、转字幕、可选转码/封面，最后点一次“执行整理”。
-- **本地优先**：无账号、无遥测、无网络请求，设置与日志只保存在 `%APPDATA%\Sotto`。
+- **跨目录配对**：字幕可在上下 3 层目录内按文件名/模糊分数寻找；封面可向下任意层，以及向上/相邻 2 层内寻找明确命名的 cover/folder/front/album/封面，不会拿相邻文件夹的 Scenes 图乱猜。
+- **多线程转码**：可按 CPU 自动或手动指定 FFmpeg 编码线程；不提供“看起来开启但实际无效”的 GPU 音频加速开关。音频编码器通常只使用其中一部分线程，真正的多文件并发仍在路线图中。
+- **更新与设置迁移**：设置页可检查 GitHub Releases、开启每日一次自动更新提醒、在软件内静默下载并校验 SHA-256；设置可导出/导入 JSON，方便换机。更新检查只访问 GitHub，不上传本地文件。
+- **隐私默认值**：诊断日志默认关闭，开启前弹窗说明本地保存与风险；崩溃时提示日志位置，便于主动反馈。
+- **本地优先**：无账号、无遥测；默认不发起网络请求。只有你手动检查更新或开启自动更新时才会访问 GitHub Releases，且不会上传本地文件或日志。设置与日志只保存在 `%APPDATA%\Sotto`。
 
 ## 界面主题
 
@@ -78,7 +83,7 @@ npm run pack:win                      # electron-builder 生成 nsis + portable
 ```
 
 - 推荐 64 位安装包；同时提供 **ia32（32 位）** 构建以覆盖老设备。Electron 固定在 34.x，因为后续版本不再发布 Windows 32 位二进制。
-- 本目录已生成可直接运行的签名版：`release/Sotto-Setup-0.1.0-x64.exe` / `Sotto-Setup-0.1.0-ia32.exe`（安装版）与 `release/Sotto-0.1.0-x64-portable.exe` / `Sotto-0.1.0-ia32-portable.exe`（便携版），校验值见 `release/SHA256SUMS.txt`。
+- 本地已生成并验证 **0.1.1 x64 测试版**：`release-test/Sotto-Setup-0.1.1-x64.exe`（安装版）与 `release-test/Sotto-0.1.1-x64-portable.exe`（便携版），校验值见 `release-test/SHA256SUMS.txt`；GitHub Releases 同步提供这两项。
 - 当前使用本地自签名证书（本机 `Get-AuthenticodeSignature` 为 Valid，Defender 扫描四个包均无威胁）；其他机器需导入 `build/signing/sotto-selfsigned.cer` 才会信任。正式发布请换成 CA 证书，见 [docs/SIGNING.md](docs/SIGNING.md)。
 - 不内置 ffmpeg 时，字幕/命名/封面重命名仍可用；音频转码与图片转 JPEG 需要在设置里指定 `ffmpeg.exe`。
 - 发行包与 ffmpeg 的许可证说明见 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md)。
@@ -88,7 +93,7 @@ npm run pack:win                      # electron-builder 生成 nsis + portable
 - 仓库不包含 token、密码、私钥、PFX 或真实用户数据。
 - `.gitignore` 明确排除 `build/signing/`、`*.pfx`、`*.key`、`*.env`、`release/`、`resources/ffmpeg/*` 等。
 - 发行 exe 仅通过 GitHub Releases 上传，不进入 git 历史。
-- 应用无账号、无遥测、无网络请求；所有文件处理都在本机完成。
+- 应用无账号、无遥测；默认不联网。只有手动检查更新/开启自动更新会访问 GitHub，且不会上传文件、路径或日志。所有文件处理都在本机完成。
 
 ## 项目结构
 

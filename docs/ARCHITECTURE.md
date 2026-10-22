@@ -12,7 +12,9 @@
 │ Main process                                         │           │
 │   index.ts（窗口/IPC/图像协议）                      │           │
 │   core/scan.ts  core/plan.ts  core/subtitle.ts       │           │
-│   core/apply.ts  core/journal  core/ffmpeg.ts        │           │
+│   core/apply.ts  core/journal  core/ffmpeg.ts        │
+  core/logger.ts（滚动日志、脱敏、诊断包）             │
+  core/updates.ts（GitHub Release 检查/校验下载）        │           │
 │   settings-store.ts（%APPDATA%/Sotto/settings.json） │           │
 └──────────────────────────────────────────────────────────────────┘
                               │
@@ -100,6 +102,22 @@
 - 执行前重新检查源/目标是否存在，绝不覆盖无关文件；覆盖类操作先备份。
 - 所有改名先改到临时名再改到最终名，避免 A→B、B→A 的环。
 - 默认不删除任何文件；开启删除时进回收站。
+
+## 日志与诊断
+
+- `src/main/core/logger.ts` 提供无 Electron 依赖的 `AppLogger`，写入 `userData/logs/app.log`，约 5MB 轮转并保留 3 个备份。
+- 主进程记录启动环境、IPC 耗时/失败、扫描/方案/执行摘要、未捕获异常、渲染进程崩溃与子进程退出。
+- 渲染进程通过 `diagnostics:log` IPC 上报 `window.error`、`unhandledrejection` 和 React ErrorBoundary 捕获的错误；不会逐条记录普通点击。
+- 每次 apply 继续写独立的 `apply-<runId>.log`。导出时把最近的 app 日志与最多 6 个 apply 日志合并为一个文本诊断包。
+- 日志与导出内容会做基础脱敏（用户主目录、token/password 等字段），但文件路径仍可能包含作品目录名；导出由用户主动选择保存位置，应用不会自动上传。
+- 测试：`tests/core/logger.test.ts` 覆盖脱敏、格式、轮转、读取与诊断包生成。
+
+## 更新与网络
+
+- `core/updates.ts` 通过 GitHub Releases API 检查最新版本，选择与当前架构匹配的 NSIS 安装包和 `SHA256SUMS.txt`。
+- 下载在软件内进行，边下边计算 SHA-256；校验不通过会删除文件。只有用户确认升级后才启动安装程序。
+- 自动更新默认关闭；开启后每天最多提示一次，提示状态写入 `general.lastUpdatePrompt`。这是应用唯一的网络请求路径。
+- 设置导出会移除最近路径与 ffmpeg 路径；导入保留当前设备路径。
 
 ## 代码签名
 

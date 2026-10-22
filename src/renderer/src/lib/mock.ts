@@ -26,12 +26,15 @@ import type {
   PlanResult,
   PlanWarning,
   ProgressEvent,
+  RendererLogEntry,
   RunRecord,
   ScanFolder,
   ScanResult,
   Settings,
   SubtitlePreview,
-  UndoResult
+  UndoResult,
+  UpdateInfo,
+  UpdateProgress
 } from '@shared/types';
 import type { MurmurApi } from '@shared/api';
 
@@ -802,6 +805,32 @@ export function createMockApi(): MurmurApi {
         path: mockSettings.general.ffmpegPath || MOCK_FFMPEG.path
       };
     },
+    async log(entry: RendererLogEntry): Promise<void> {
+      if (typeof console !== 'undefined') console.debug('[sotto:log]', entry.level, entry.message);
+    },
+    async exportLogs(): Promise<string | null> {
+      await delay(140, 240);
+      return 'C:\\Users\\Mika\\Downloads\\Sotto-diagnostics-demo.log';
+    },
+    async exportSettings(): Promise<string | null> {
+      await delay(120, 220);
+      return 'C:\\Users\\Mika\\Downloads\\Sotto-settings-demo.json';
+    },
+    async importSettings(): Promise<Settings | null> {
+      await delay(120, 220);
+      return cloneSettings(mockSettings);
+    },
+    async checkForUpdates(): Promise<UpdateInfo | null> {
+      await delay(120, 200);
+      return null;
+    },
+    async downloadUpdate(): Promise<string> {
+      await delay(80, 120);
+      return 'C:\\Users\\Mika\\AppData\\Roaming\\Sotto\\updates\\Sotto-Setup-demo.exe';
+    },
+    async installUpdate(): Promise<void> {
+      await delay(80, 120);
+    },
     windowMinimize(): void {
       /* browser preview */
     },
@@ -824,6 +853,10 @@ export function createMockApi(): MurmurApi {
       };
     },
     onWindowMaximized(): () => void {
+      return () => undefined;
+    },
+    onUpdateProgress(listener: (progress: UpdateProgress) => void): () => void {
+      void listener;
       return () => undefined;
     }
   };

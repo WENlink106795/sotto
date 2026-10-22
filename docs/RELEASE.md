@@ -4,7 +4,7 @@
 
 ## 1. 版本与变更
 
-1. 更新 `package.json` 的 `version`（例如 `0.1.0` → `0.1.1`）。
+1. 更新 `package.json` 的 `version`（例如 `0.1.1` → `0.1.2`）。
 2. 在 `CHANGELOG.md` 增加对应条目。
 3. 确认 README 的截图与功能描述没有过期。
 
@@ -102,8 +102,8 @@ npm run pack:win
 
 ## 6. GitHub Release
 
-- Tag：`v0.1.0`（与 package.json 一致）。
-- 标题：`Sotto 0.1.0 · 耳畔`。
+- Tag：`v0.1.1`（与 package.json 一致）。
+- 标题：`Sotto 0.1.1 · 耳畔`。
 - 附件：x64 / ia32 的 setup 与 portable，以及 `SHA256SUMS.txt`。
 - 说明中包含：核心功能、三套主题、已知限制（音频转码默认只处理配对音频；32 位使用兼容 ffmpeg）、许可证与第三方说明。
 - 不要提交 `node_modules/`、`out/`、`release/`、`resources/ffmpeg/*.exe`、`demo-library/`。

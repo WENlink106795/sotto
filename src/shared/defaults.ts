@@ -55,7 +55,10 @@ export const DEFAULT_SETTINGS: Settings = {
     language: 'zh-CN',
     ffmpegPath: '',
     recentRoots: [],
-    showAdvanced: false
+    showAdvanced: false,
+    loggingEnabled: false,
+    autoUpdate: false,
+    lastUpdatePrompt: ''
   }
 };
 

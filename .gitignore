@@ -3,6 +3,7 @@ node_modules/
 out/
 dist/
 release/
+release-test/
 coverage/
 *.tsbuildinfo
 

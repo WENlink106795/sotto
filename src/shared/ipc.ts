@@ -14,6 +14,14 @@ export const IPC = {
   settingsGet: 'settings:get',
   settingsSave: 'settings:save',
   ffmpegInfo: 'ffmpeg:info',
+  logWrite: 'diagnostics:log',
+  exportLogs: 'diagnostics:export',
+  settingsExport: 'settings:export',
+  settingsImport: 'settings:import',
+  updateCheck: 'update:check',
+  updateDownload: 'update:download',
+  updateInstall: 'update:install',
+  updateOpenPage: 'update:open-page',
   windowMinimize: 'window:minimize',
   windowToggleMaximize: 'window:toggle-maximize',
   windowClose: 'window:close',
@@ -22,5 +30,6 @@ export const IPC = {
 
 export const IPC_EVENTS = {
   progress: 'event:progress',
-  windowMaximized: 'event:window-maximized'
+  windowMaximized: 'event:window-maximized',
+  updateProgress: 'event:update-progress'
 } as const;

@@ -16,4 +16,4 @@ If you find a leaked credential or a vulnerability, please open a private securi
 
 ## Scope
 
-Sotto processes files locally and does not make network requests at runtime. The main risk surface is malformed media/subtitle files passed to bundled ffmpeg; keep the app and ffmpeg build up to date for public releases.
+Sotto processes files locally and makes no network requests by default. Only a manual update check or opt-in auto-update contacts GitHub Releases; it never uploads files, paths, or logs. The main risk surface is malformed media/subtitle files passed to bundled ffmpeg; keep the app and ffmpeg build up to date for public releases.

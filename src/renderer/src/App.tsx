@@ -11,6 +11,7 @@ import CoverPicker from './components/CoverPicker';
 import ProgressOverlay from './components/ProgressOverlay';
 import ResultDialog from './components/ResultDialog';
 import ToastHost from './components/ToastHost';
+import UpdatePrompt from './components/UpdatePrompt';
 
 export default function App(): JSX.Element {
   const boot = useAppStore((state) => state.boot);
